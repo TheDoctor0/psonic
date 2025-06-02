@@ -1,27 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic\Commands\Ingest;
 
 use Psonic\Commands\Command;
 
 final class FlushBucketCommand extends Command
 {
-    private $command    = 'FLUSHB';
-    private $parameters = [];
+    private string $command = 'FLUSHB';
 
-    /**
-     * Flushes a given bucket in a collection
-     * FlushBucketCommand constructor.
-     * @param string $collection
-     * @param string $bucket
-     */
     public function __construct(string $collection, string $bucket)
     {
-        $this->parameters = [
+        parent::__construct($this->command, [
             'collection' => $collection,
             'bucket'     => $bucket,
-        ];
-
-        parent::__construct($this->command, $this->parameters);
+        ]);
     }
 }

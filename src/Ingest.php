@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic;
 
 use Psonic\Channels\Channel;
-use Psonic\Contracts\Client;
 use InvalidArgumentException;
 use Psonic\Commands\Ingest\PopCommand;
 use Psonic\Commands\Ingest\PushCommand;
@@ -16,132 +17,81 @@ use Psonic\Commands\Ingest\StartIngestChannelCommand;
 class Ingest extends Channel
 {
     /**
-     * Ingest constructor.
-     * @param Client $client
-     */
-    public function __construct(Client $client)
-    {
-        parent::__construct($client);
-    }
-
-    /**
-     * @return mixed|Contracts\Response|void
      * @throws Exceptions\ConnectionException
      */
-    public function connect($password = 'SecretPassword')
+    public function connect(string $password = 'SecretPassword'): Contracts\Response
     {
         parent::connect();
 
         $response = $this->send(new StartIngestChannelCommand($password));
 
         if ($bufferSize = $response->get('bufferSize')) {
-            $this->bufferSize = (int)$bufferSize;
+            $this->bufferSize = (int) $bufferSize;
         }
 
         return $response;
     }
 
-    /**
-     * @param string $collection
-     * @param string $bucket
-     * @param string $object
-     * @param string $text
-     * @param string $locale
-     * @return Contracts\Response
-     */
-    public function push(string $collection, string $bucket, string $object, string $text, $locale = null)
+    public function push(string $collection, string $bucket, string $object, string $text, ?string $locale = null): ?Contracts\Response
     {
-
         $chunks = $this->splitString($collection, $bucket, $object, $text);
 
-        if ($text == "" || empty($chunks)) {
+        if ($text === '' || empty($chunks)) {
             throw new InvalidArgumentException("The parameter \$text is empty");
         }
+
         foreach ($chunks as $chunk) {
             $message = $this->send(new PushCommand($collection, $bucket, $object, $chunk, $locale));
-            if ($message == false || $message == "") {
+
+            if (! ((string) $message)) {
                 throw new InvalidArgumentException();
             }
         }
-        return $message;
+
+        return $message ?? null;
     }
 
-    /**
-     * @param string $collection
-     * @param string $bucket
-     * @param string $object
-     * @param string $text
-     * @return mixed
-     */
-    public function pop(string $collection, string $bucket, string $object, string $text)
+    public function pop(string $collection, string $bucket, string $object, string $text): int
     {
         $chunks = $this->splitString($collection, $bucket, $object, $text);
         $count  = 0;
+
         foreach ($chunks as $chunk) {
             $message = $this->send(new PopCommand($collection, $bucket, $object, $chunk));
-            if ($message == false || $message == "") {
+
+            if (! ((string) $message)) {
                 throw new InvalidArgumentException();
             }
-            $count += $message->get('count');
+
+            $count += (int) $message->get('count');
         }
 
         return $count;
     }
 
-    /**
-     * @param $collection
-     * @param null $bucket
-     * @param null $object
-     * @return mixed
-     */
-    public function count($collection, $bucket = null, $object = null)
+    public function count(string $collection, ?string $bucket = null, ?string $object = null): int
     {
         $message = $this->send(new CountCommand($collection, $bucket, $object));
 
-        return $message->get('count');
+        return (int) $message->get('count');
     }
 
-    /**
-     * @param $collection
-     * @return mixed
-     */
-    public function flushc($collection)
+    public function flushc(string $collection): int
     {
-        $message = $this->send(new FlushCollectionCommand($collection));
-        return $message->getCount();
+        return $this->send(new FlushCollectionCommand($collection))->getCount();
     }
 
-    /**
-     * @param $collection
-     * @param $bucket
-     * @return integer
-     */
-    public function flushb($collection, $bucket)
+    public function flushb(string $collection, string $bucket): int
     {
-        $message = $this->send(new FlushBucketCommand($collection, $bucket));
-        return $message->getCount();
+        return $this->send(new FlushBucketCommand($collection, $bucket))->getCount();
     }
 
-    /**
-     * @param $collection
-     * @param $bucket
-     * @param $object
-     * @return mixed
-     */
-    public function flusho($collection, $bucket, $object)
+    public function flusho(string $collection, string $bucket, string $object): int
     {
-        $message = $this->send(new FlushObjectCommand($collection, $bucket, $object));
-        return $message->getCount();
+        return $this->send(new FlushObjectCommand($collection, $bucket, $object))->getCount();
     }
 
-    /**
-     * @param string $collection
-     * @param string $bucket
-     * @param string $key
-     * @param string $text
-     * @return array
-     */
-    private function splitString(string $collection, string $bucket, string $key, string  $text): array
+    private function splitString(string $collection, string $bucket, string $key, string $text): array
     {
         return str_split($text, ($this->bufferSize - (strlen($key . $collection . $bucket) + 20)));
     }

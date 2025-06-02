@@ -1,20 +1,17 @@
 <?php
 
-namespace Psonic\Contracts;
+declare(strict_types=1);
 
+namespace Psonic\Contracts;
 
 use Psonic\Exceptions\ConnectionException;
 
 interface Channel
 {
     /**
-     * @return mixed
      * @throws ConnectionException
      */
-    public function connect();
+    public function connect(): Response;
 
-    /**
-     * @return Response
-     */
     public function disconnect(): Response;
 }

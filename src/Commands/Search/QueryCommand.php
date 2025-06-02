@@ -1,34 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic\Commands\Search;
 
 use Psonic\Commands\Command;
 
 final class QueryCommand extends Command
 {
-    private $command    = 'QUERY';
-    private $parameters = [];
+    private string $command = 'QUERY';
 
-    /**
-     * QueryCommand constructor.
-     * @param string $collection
-     * @param string $bucket
-     * @param string $terms
-     * @param null $limit
-     * @param null $offset
-     * @param null $locale
-     */
-    public function __construct(string $collection, string $bucket, string $terms, $limit = null, $offset = null, $locale = null)
+    public function __construct(string $collection, string $bucket, string $terms, ?int $limit = null, ?int $offset = null, ?string $locale = null)
     {
-        $this->parameters = [
+        parent::__construct($this->command, [
             'collection' => $collection,
             'bucket'     => $bucket,
-            'terms'      => self::wrapInQuotes($terms),
+            'terms'      => $this->wrapInQuotes($terms),
             'limit'      => $limit ? "LIMIT($limit)": null,
             'offset'     => $offset ? "OFFSET($offset)": null,
             'locale'     => $locale ? "LANG($locale)": null,
-        ];
-
-        parent::__construct($this->command, $this->parameters);
+        ]);
     }
 }

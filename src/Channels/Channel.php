@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
 
 namespace Psonic\Channels;
+
 use Psonic\Contracts\Client;
 use Psonic\Contracts\Command;
 use Psonic\Contracts\Response;
@@ -12,69 +14,50 @@ use Psonic\Contracts\Channel as ChannelInterface;
 
 abstract class Channel implements ChannelInterface
 {
-    /**
-     * @var Client
-     */
-    protected $client;
+    protected Client $client;
 
-    /**
-     * @var integer
-     */
-    protected $bufferSize;
+    protected int $bufferSize;
 
-    /**
-     * Channel constructor.
-     * @param Client $client
-     */
     public function __construct(Client $client)
     {
         $this->client = $client;
     }
 
     /**
-     * @return mixed|void
      * @throws ConnectionException
      */
-    public function connect()
+    public function connect(): Response
     {
         $this->client->connect();
+
         $response = $this->client->read();
-        if($response->getStatus() == "CONNECTED") {
-            return;
+
+        if ($response->getStatus() !== "CONNECTED") {
+            throw new ConnectionException($response->getStatus());
         }
-        throw new ConnectionException;
+
+        return $response;
     }
 
-    /**
-     * @return Response
-     */
     public function disconnect(): Response
     {
         $message = $this->client->send(new QuitChannelCommand);
+
         $this->client->disconnect();
+
         return $message;
     }
 
-    /**
-     * @return Response
-     */
     public function ping(): Response
     {
         return $this->client->send(new PingCommand);
     }
 
-    /**
-     * @return Response
-     */
     public function read(): Response
     {
         return $this->client->read();
     }
 
-    /**
-     * @param Command $command
-     * @return Response
-     */
     public function send(Command $command): Response
     {
         return $this->client->send($command);

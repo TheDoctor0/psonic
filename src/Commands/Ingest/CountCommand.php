@@ -1,29 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic\Commands\Ingest;
 
 use Psonic\Commands\Command;
 
 final class CountCommand extends Command
 {
-    private $command    = 'COUNT';
-    private $parameters = [];
+    private string $command = 'COUNT';
 
-    /**
-     * Counts the number of objects
-     * CountCommand constructor.
-     * @param string $collection
-     * @param string|null $bucket
-     * @param string|null $object
-     */
-    public function __construct(string $collection, string $bucket = null, string $object = null)
+    public function __construct(string $collection, string $bucket = null, ?string $object = null)
     {
-        $this->parameters = [
+        parent::__construct($this->command, [
             'collection' => $collection,
             'bucket'     => $bucket,
             'object'     => $object,
-        ];
-
-        parent::__construct($this->command, $this->parameters);
+        ]);
     }
 }

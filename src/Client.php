@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic;
 
 use Psonic\Exceptions\ConnectionException;
@@ -9,61 +11,51 @@ use Psonic\Contracts\Response as ResponseInterface;
 
 class Client implements ClientInterface
 {
-    private $resource;
+    private mixed $resource;
+    private string $host;
+    private int $port;
+    private ?int $errorNo = null;
+    private ?string $errorMessage = null;
+    private int $maxTimeout;
 
-    private $host;
-    private $port;
-    private $errorNo;
-    private $errorMessage;
-    private $maxTimeout;
-
-    /**
-     * Client constructor.
-     * @param string $host
-     * @param int $port
-     * @param int $timeout
-     */
-    public function __construct($host = 'localhost', $port = 1491, $timeout = 30)
+    public function __construct(string $host = 'localhost', int $port = 1491, int $timeout = 30)
     {
         $this->host = $host;
         $this->port = $port;
         $this->maxTimeout = $timeout;
-        $this->errorNo = null;
-        $this->errorMessage = '';
     }
 
     /**
-     * @param CommandInterface $command
-     * @return ResponseInterface
-     * @throws ConnectionException
+     * @throws \Psonic\Exceptions\ConnectionException
+     * @throws \Psonic\Exceptions\CommandFailedException
      */
     public function send(CommandInterface $command): ResponseInterface
     {
-        if (!$this->resource) {
+        if (! $this->resource) {
             throw new ConnectionException();
         }
 
-        fwrite($this->resource, $command);
+        fwrite($this->resource, (string) $command);
+
         return $this->read();
     }
 
     /**
-     * reads the buffer from a given stream
-     * @return ResponseInterface
+     * @throws \Psonic\Exceptions\CommandFailedException
      */
     public function read(): ResponseInterface
     {
         $message = explode("\r\n", fgets($this->resource))[0];
+
         return new SonicResponse($message);
     }
 
     /**
      * @throws ConnectionException
-     * connects to the socket
      */
-    public function connect()
+    public function connect(): void
     {
-        if (!$this->resource = stream_socket_client("tcp://{$this->host}:{$this->port}", $this->errorNo, $this->errorMessage, $this->maxTimeout)) {
+        if (! $this->resource = stream_socket_client("tcp://$this->host:$this->port", $this->errorNo, $this->errorMessage, $this->maxTimeout)) {
             throw new ConnectionException();
         }
     }
@@ -71,19 +63,17 @@ class Client implements ClientInterface
     /**
      * Disconnects from a socket
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         stream_socket_shutdown($this->resource, STREAM_SHUT_WR);
+
         $this->resource = null;
     }
 
-    /**
-     * @return bool
-     * clears the output buffer
-     */
-    public function clearBuffer()
+    public function clearBuffer(): bool
     {
         stream_get_line($this->resource, 4096, "\r\n");
+
         return true;
     }
 }

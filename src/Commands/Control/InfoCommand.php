@@ -1,19 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic\Commands\Control;
 
 use Psonic\Commands\Command;
 
 final class InfoCommand extends Command
 {
-    private $command    = 'INFO';
-    private $parameters = [];
+    private string $command = 'INFO';
 
-    /**
-     * Info Command constructor.
-     */
     public function __construct()
     {
-        parent::__construct($this->command, $this->parameters);
+        parent::__construct($this->command);
     }
 }

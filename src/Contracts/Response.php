@@ -1,18 +1,12 @@
-<?php 
+<?php
+
+declare(strict_types=1);
+
 namespace Psonic\Contracts;
 
 interface Response
 {
-    /**
-     * fetches an item from the parsed buffer
-     * @param $key
-     * @return mixed
-     */
-    public function get($key);
+    public function get(string $key): mixed;
 
-    /**
-     * returns the status of the read buffer
-     * @return string
-     */
     public function getStatus(): string;
 }

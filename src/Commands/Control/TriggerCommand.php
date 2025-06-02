@@ -1,24 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic\Commands\Control;
 
 use Psonic\Commands\Command;
 
 final class TriggerCommand extends Command
 {
-    private $command    = 'TRIGGER';
-    private $parameters = [];
+    private string $command = 'TRIGGER';
 
-    /**
-     * TriggerCommand constructor.
-     * @param string $action
-     */
     public function __construct(string $action)
     {
-        $this->parameters = [
+        parent::__construct($this->command, [
             'action' => $action,
-        ];
-
-        parent::__construct($this->command, $this->parameters);
+        ]);
     }
 }

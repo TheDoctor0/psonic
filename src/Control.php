@@ -1,30 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic;
 
-
 use Psonic\Channels\Channel;
-use Psonic\Contracts\Client;
 use Psonic\Commands\Control\InfoCommand;
 use Psonic\Commands\Control\TriggerCommand;
 use Psonic\Commands\Control\StartControlChannelCommand;
 
 class Control extends Channel
 {
-    /**
-     * Control constructor.
-     * @param Client $client
-     */
-    public function __construct(Client $client)
-    {
-        parent::__construct($client);
-    }
-
-    /**
-     * @return mixed|Contracts\Response|void
-     * @throws Exceptions\ConnectionException
-     */
-    public function connect($password = 'SecretPassword')
+    public function connect(string $password = 'SecretPassword'): Contracts\Response
     {
         parent::connect();
 
@@ -37,24 +24,17 @@ class Control extends Channel
         return $response;
     }
 
-    /**
-     * @param $action
-     * @return Contracts\Response
-     */
-    public function trigger($action)
+    public function trigger(string $action): Contracts\Response
     {
         return $this->send(new TriggerCommand($action));
     }
 
-    /**
-     * @return Contracts\Response
-     */
-    public function consolidate()
+    public function consolidate(): Contracts\Response
     {
         return $this->trigger('consolidate');
     }
 
-    public function info()
+    public function info(): Contracts\Response
     {
         return $this->send(new InfoCommand);
     }

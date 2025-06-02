@@ -1,25 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Psonic\Commands\Ingest;
 
 use Psonic\Commands\Command;
 
 final class FlushCollectionCommand extends Command
 {
-    private $command    = 'FLUSHC';
-    private $parameters = [];
+    private string $command = 'FLUSHC';
 
-    /**
-     * Flushes a given collection
-     * FlushCollectionCommand constructor.
-     * @param string $collection
-     */
     public function __construct(string $collection)
     {
-        $this->parameters = [
+        parent::__construct($this->command, [
             'collection' => $collection,
-        ];
-
-        parent::__construct($this->command, $this->parameters);
+        ]);
     }
 }
